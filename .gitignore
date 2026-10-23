@@ -1,0 +1,15 @@
+# Compiled executable files
+
+*.exe
+
+# Compiled object files
+
+*.o
+
+# Debugging files
+
+*.out
+
+# IDE and editor files
+
+.vscode/
