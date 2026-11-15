@@ -1,102 +1,78 @@
-# Resource Planning and Emergency Coordination System
+# ResQflow – Resource Planning and Emergency Coordination System (Phase 3)
 
-## 📌 Project Overview
+Terminal application written in C++17 with **custom data structures** (no STL containers) and a **MySQL** back end.
+It coordinates emergency response: resources, multi-warehouse inventory, emergencies with a priority queue,
+allocations, responders, warehouse transfers, location/route planning, activity history and role-based login.
 
-The Resource Planning and Emergency Coordination System is a C++-based application designed to manage emergency situations, maintain resource inventories, prioritize emergencies based on severity, and allocate available resources efficiently.
+## Folder structure
 
-The project demonstrates the practical implementation of Object-Oriented Programming (OOP) and Data Structures to support resource management and emergency coordination.
+```
+main.cpp                      menus, role checks, transaction/rollback helpers
+include/  src/                domain classes, managers, DSA implementations
+include/Database/ src/Database/   one repository per table group (prepared statements) + DatabaseConnection
+database/                     ResQflow_Database_Schema.sql (fresh install), Migration_001_Phase3_Alignment.sql (old DB)
+config/                       environment-variable templates (no passwords)
+tests/                        module tests, DSA stress test, tests/Database (needs MySQL), tests/offline (no MySQL needed)
+```
 
-## 🎯 Objectives
+## 1. Database setup (MySQL 8.0)
 
-- Maintain an inventory of emergency resources.
-- Register and manage emergencies based on severity.
-- Prioritize critical emergencies for processing.
-- Allocate resources according to availability.
-- Track allocated resources and outstanding requirements.
-- Demonstrate modular programming using C++ classes and data structures.
+Fresh install:
 
-## 🛠️ Technologies Used
+```
+mysql -u root -p < database/ResQflow_Database_Schema.sql
+```
 
-- **Programming Language:** C++
-- **Concepts:** Object-Oriented Programming (OOP)
-- **Data Structures:** Singly Linked List and Priority Queue
-- **Compiler:** GCC / MinGW
-- **Development Environment:** Visual Studio Code
+Existing Phase 3 database created from the old SQL: run `database/Migration_001_Phase3_Alignment.sql` once
+(adds the responder columns the code needs; safe to run twice).
 
-## 🧩 Project Modules
+## 2. Configuration (environment variables – nothing is stored in the source)
 
-### 1. Resource Management
-Manages the inventory of resources such as ambulances, medical supplies, food, and water.
-
-Features:
-- Add new resources.
-- Display available resources.
-- Search for resources using their IDs.
-- Update resource quantities.
-
-**Data Structure:** Singly Linked List
-
-### 2. Emergency Management
-Manages emergency registrations and processes them according to their severity.
-
-Features:
-- Register new emergencies.
-- Assign unique emergency IDs during the current program execution.
-- Record emergency type, location, description, and severity.
-- Display pending emergencies.
-- Process the highest-priority emergency first.
-
-**Data Structure:** Array-Based Priority Queue
-
-Severity levels:
-- Critical
-- High
-- Medium
-- Low
-
-Emergencies with equal severity are processed in their registration order.
-
-### 3. Resource Allocation
-Allocates available resources to emergency requirements.
-
-Features:
-- Accept emergency and resource IDs.
-- Record the requested quantity.
-- Allocate resources according to available stock.
-- Update resource quantities after allocation.
-- Record outstanding requirements when resources are insufficient.
-- Display allocation records.
-
-### 4. Main Menu and Integration
-Connects the individual modules through a menu-driven interface.
-
-Features:
-- Navigate between resource management and emergency management.
-- Perform resource allocation.
-- View allocation records.
-- Exit the application.
-
-## 🧠 Object-Oriented Programming Concepts
-
-The project applies the following OOP concepts where implemented:
-
-- **Classes and Objects:** Represent resources, emergencies, and allocation records.
-- **Encapsulation:** Organizes data members and member functions within classes.
-- **Abstraction:** Provides public methods to perform operations without exposing all internal implementation details.
-- **Constructors and Destructors:** Initialize objects and manage dynamically allocated memory where implemented.
-- **Modular Design:** Separates functionality into multiple header and implementation files.
-
-## 📚 Data Structures Used
-
-| Data Structure | Application | Purpose |
+| Variable | Required | Default |
 |---|---|---|
-| Singly Linked List | Resource Management | Stores and manages resource records dynamically |
-| Array-Based Priority Queue | Emergency Management | Processes emergencies according to severity |
-| Linked List | Resource Allocation | Maintains allocation records, if implemented in the allocation manager |
+| `RESQFLOW_DB_PASSWORD` | yes | – |
+| `RESQFLOW_DB_HOST` | no | `localhost` |
+| `RESQFLOW_DB_USER` | no | `root` |
+| `RESQFLOW_DB_NAME` | no | `resqflow` |
+| `RESQFLOW_DB_PORT` | no | `3306` |
 
-## ⚙️ Installation and Execution
+**Windows Command Prompt:**
+1. Copy `config\\resqflow_env_template.bat` to `config\\resqflow_env.bat`.
+2. Open the copied file and replace `CHANGE_ME` with your MySQL password.
+3. From the project directory, run `call config\\resqflow_env.bat`.
+4. Start the application using `ResQflow.exe`.
 
-### Prerequisites
+**MSYS2 UCRT64 shell:**
+1. Copy `config/resqflow_env_template.sh` to `config/resqflow_env.sh`.
+2. Replace `CHANGE_ME` with your MySQL password.
+3. Run `source config/resqflow_env.sh`.
+4. Start the application using `./ResQflow.exe`.
 
-- A C++ compiler such as GCC / MinGW.
-- Visual Studio Code or another C++ development environment.
+Never commit the filled-in configuration files. They are excluded by `.gitignore`.
+
+## 3. Build and run (MSYS2 UCRT64)
+
+Your original command is correct – it already compiles `main.cpp`, every `src/*.cpp` and every `src/Database/*.cpp`
+and links `mariadb` + `crypto` (OpenSSL is needed by `PasswordHasher`):
+
+```
+g++ -std=c++17 -Wall -Wextra -pedantic -Iinclude -IC:/msys64/ucrt64/include/mariadb main.cpp src/*.cpp src/Database/*.cpp -LC:/msys64/ucrt64/lib -lmariadb -lcrypto -o ResQflow.exe
+./ResQflow.exe
+```
+
+The first start (empty `users` table) asks you to create the first ADMIN account (password ≥ 10 characters, hashed with PBKDF2-SHA256).
+
+## 4. Roles
+
+| Role | Access |
+|---|---|
+| ADMIN | all modules, activity history, user management, responder approval |
+| COORDINATOR | resources, warehouses, inventory, emergencies, allocations, responders, transfers, routes |
+| RESPONDER | own dashboard only: availability, progress of the emergency assigned to them |
+
+## 5. Tests
+
+* **Data-structure tests (no DB):** see `tests/DataStructureStressTest.cpp` and the module tests in `tests/*.cpp`.
+* **Repository tests (need MySQL):** `tests/Database/*.cpp` – each file has its own build line in the header comment.
+* **Offline end-to-end tests (no MySQL):** `tests/offline/run_offline_tests.sh` (Linux/WSL) – see `tests/offline/README.md`.
+  These use a SQLite stand-in for the MariaDB API, so they prove the program logic and SQL structure, **not** MySQL itself.
