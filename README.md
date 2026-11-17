@@ -265,12 +265,11 @@ Responders register themselves. An admin must approve the registration before th
 
 | Member | Responsibility | Main work |
 |---|---|---|
-| SHRISTI KOHLI | Core architecture and integration | Overall C++ architecture, resource management, warehouse management, inventory, project integration and final release |
+| SHRISTI KOHLI(TEAM LEADER) | Core architecture , database , allocation and integration | Overall C++ architecture, MySQL schema and database testing, allocation management, stock validation, warehouse management, inventory, warehouse transfers, project integration and final release|
 | SATYAM SHARMA | Emergency management | Emergency lifecycle, priority calculation, max heap, emergency testing |
-| SHAURYA PAL| Allocation and resource coordination | Allocation workflows, stock validation, warehouse transfers, responder management |
-| VAISHNAVY CHAUHAN | Database and supporting modules | MySQL schema and testing, location and route planning, activity history, user management |
+| SHAURYA PAL| Resource Management | Resource management, resource hash table, resource search and resource-related testing |
+| VAISHNAVY CHAUHAN | Responder and supporting modules | Responder Management , location and route planning, activity history, user management |
 
-Replace "Member 1" to "Member 4" with the real names before publishing.
 
 ## Future enhancements
 
