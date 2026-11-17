@@ -1,0 +1,33 @@
+# Compiled executables
+*.exe
+*.out
+*.app
+
+# Object and library files
+*.o
+*.obj
+*.a
+*.lib
+*.dll
+
+# Actual environment files and secrets
+.env
+.env.*
+!.env.example
+config/resqflow_env.sh
+config/resqflow_env.bat
+
+# Build directories
+build/
+bin/
+obj/
+
+# IDE and editor settings
+.vscode/
+.idea/
+
+# Temporary files
+*.log
+*.tmp
+.DS_Store
+Thumbs.db
